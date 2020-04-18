@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/melanga0355/Spring%20Config%20Server/_apis/build/status/melangad.spring-config-rest-server?branchName=master)](https://dev.azure.com/melanga0355/Spring%20Config%20Server/_build/latest?definitionId=1&branchName=master)
+
 # Introduction
 This is an alternative for Spring Cloud Config which has its own client and server. This project is for the server component of the config server.
 
