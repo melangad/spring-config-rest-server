@@ -106,7 +106,7 @@ You could add multiple keys at the same time
 ```
 GET /config/{APPLICATION_ID}
 ```
-### Update configuration on an exisiting application
+### Update configuration on an existing application
 #### API
 ```
 PATCH /config/{APPLICATION_ID}
@@ -126,7 +126,51 @@ PATCH /config/{APPLICATION_ID}
 ```
 At the same time you could add new configurations also
 
-Note: Everytime when configuration update API invoke, it would increase the version even though there are no changes.
+Note: Every time when configuration update API invoke, it would increase the version even though there are no changes.
+
+### Replace configuration on an existing application
+Existing configuration will be fully replaced with provided configurations. Versions will ne bumped up.
+#### API
+```
+PUT /config/{APPLICATION_ID}
+```
+#### Sample Request Body
+```
+{
+    "SOME-KEY1":{
+        "value": "new vlaue",
+        "description": "desc1"
+    },
+    "SOME-KEY3":{
+        "value": "val2",
+        "description": "desc2"
+    }
+}
+```
+
+### Client Feedback
+Client application can provide feedback to the config server via this API. Using this API, client can inform the server with current client configuration version and last updated timestamp.
+
+Although API is provided server does not perform any action with client provided feedback. You can create a bean implementing ClientFeedbackHandler interface to handle the feedback data as you want.
+
+#### API
+```
+POST /config/feedback
+```
+#### Sample Request Body
+```
+{
+    "application": "APPLICATION_ID",
+    "clientId": "CLIENT_ID",
+    "clientVersion": 3
+    "lastUpdateTime": "2020-04-19T13:49:35Z"
+}
+```
+
+## Events
+You can use events if you need to perform additional task on any configuration create, update and patch action. In order to listen to events, create a bean implementing ConfigEventHandler.
+
+You could use the event to handle any post processing actions such as notifying clients about the updates so that client could refresh the configurations.
 
 # TODO
 * Add config push to clients on configuration update with pluggable adapters for custom providers

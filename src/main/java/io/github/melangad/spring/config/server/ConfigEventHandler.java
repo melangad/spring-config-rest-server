@@ -2,8 +2,8 @@ package io.github.melangad.spring.config.server;
 
 import io.github.melangad.spring.config.server.model.ConfigEvent;
 
-public interface ConfigEventDispatcher {
+public interface ConfigEventHandler {
 	
-	public void dispatchEvent(ConfigEvent configEvent);
+	public void onEvent(ConfigEvent configEvent);
 
 }

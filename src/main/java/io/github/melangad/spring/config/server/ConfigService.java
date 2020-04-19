@@ -41,7 +41,7 @@ public class ConfigService {
 	private ConfigHistoryRepository configHistoryRepository;
 
 	@Autowired(required = false)
-	private ConfigEventDispatcher configEventDispatcher;
+	private ConfigEventHandler configEventHandler;
 
 	@Autowired(required = false)
 	private ClientFeedbackHandler clientFeedbackHandler;
@@ -222,11 +222,11 @@ public class ConfigService {
 
 	@Async
 	private void dispatchEvent(ConfigEventType eventType, final String application) {
-		if (null != this.configEventDispatcher) {
+		if (null != this.configEventHandler) {
 			final ConfigEvent event = new ConfigEvent(UUID.randomUUID().toString(), application, eventType);
 			event.setEventDate(new Date());
 
-			this.configEventDispatcher.dispatchEvent(event);
+			this.configEventHandler.onEvent(event);
 		}
 	}
 
