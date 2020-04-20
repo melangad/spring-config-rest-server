@@ -25,8 +25,8 @@ public class ConfigHistory {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 
-	@Column(name = "APPLICATION")
-	private String application;
+	@Column(name = "LABEL")
+	private String label;
 
 	@Column(name = "CONFIG_VERSION")
 	private Integer configVersion;

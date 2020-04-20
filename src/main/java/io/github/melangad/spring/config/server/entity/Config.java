@@ -25,8 +25,8 @@ public class Config {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 
-	@Column(unique = true, name = "APPLICATION")
-	private String application;
+	@Column(unique = true, name = "LABEL")
+	private String label;
 
 	@Column(name = "CONFIG_VERSION")
 	private Integer configVersion;

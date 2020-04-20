@@ -47,7 +47,7 @@ public class ConfigServiceTest {
 	private ConfigHistoryRepository configHistoryRepository;
 
 	@Test
-	public void createConfigSuccessful() throws ApplicationAlreadyExisitException, InvalidConfigException {
+	public void createConfigSuccessful() throws LabelAlreadyExisitException, InvalidConfigException {
 
 		Config config = new Config();
 
@@ -68,12 +68,12 @@ public class ConfigServiceTest {
 		assertThat(result.get().getConfigData().get("SOME-KEY").getValue()).isEqualTo("val1");
 		assertThat(result.get().getConfigData().get("SOME-KEY").getDescription()).isEqualTo("desc1");
 	}
-	
-	@Test(expected = ApplicationAlreadyExisitException.class)
-	public void createConfigFailExistingApplication() throws ApplicationAlreadyExisitException, InvalidConfigException {
+
+	@Test(expected = LabelAlreadyExisitException.class)
+	public void createConfigFailExistingApplication() throws LabelAlreadyExisitException, InvalidConfigException {
 
 		Mockito.when(configRepository.save(Mockito.any())).thenThrow(DataIntegrityViolationException.class);
-		
+
 		ConfigMetaDAO meta = new ConfigMetaDAO();
 		meta.setValue("val1");
 		meta.setDescription("desc1");
@@ -84,7 +84,6 @@ public class ConfigServiceTest {
 		configService.createConfig("APP1", configMap);
 	}
 
-
 	@Test
 	public void getConfigSuccessful() {
 
@@ -92,13 +91,13 @@ public class ConfigServiceTest {
 
 		Config config = new Config();
 		config.setConfigVersion(3);
-		config.setApplication("APP1");
+		config.setLabel("APP1");
 		config.setValue(json);
-		
+
 		List<Config> list = new ArrayList<Config>();
 		list.add(config);
 
-		Mockito.when(configRepository.findByApplication("APP1")).thenReturn(list);
+		Mockito.when(configRepository.findByLabel("APP1")).thenReturn(list);
 
 		Optional<ConfigDetailDAO> result = configService.getConfig("APP1");
 
@@ -108,18 +107,15 @@ public class ConfigServiceTest {
 		assertThat(result.get().getConfigData().get("SOME-KEY").getValue()).isEqualTo("val1");
 		assertThat(result.get().getConfigData().get("SOME-KEY").getDescription()).isEqualTo("desc1");
 	}
-	
+
 	@Test
 	public void getConfigInvalidApplication() {
-		
-		Mockito.when(configRepository.findByApplication("APP1")).thenReturn(Collections.emptyList());
+
+		Mockito.when(configRepository.findByLabel("APP1")).thenReturn(Collections.emptyList());
 
 		Optional<ConfigDetailDAO> result = configService.getConfig("APP1");
 
 		assertThat(result.isPresent()).isFalse();
 	}
-	
-	
-	
 
 }
