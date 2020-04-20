@@ -1,7 +1,7 @@
 [![Build Status](https://dev.azure.com/melanga0355/Spring%20Config%20Server/_apis/build/status/melangad.spring-config-rest-server?branchName=master)](https://dev.azure.com/melanga0355/Spring%20Config%20Server/_build/latest?definitionId=1&branchName=master)
 
 # Introduction
-This is an alternative for Spring Cloud Config which has its own client and server. This project is for the server component of the config server.
+This is an alternative for Spring Cloud Config which has its own client and server. This project is for the server component of the config server. You can find the client under [client project](https://github.com/melangad/spring-config-rest-client)
 
 The server is using database as the configuration source.
 
@@ -174,4 +174,4 @@ You could use the event to handle any post processing actions such as notifying 
 
 # TODO
 * Add config push to clients on configuration update with pluggable adapters for custom providers
-* Add security to Server 
+* Add security to Server APIs
