@@ -19,7 +19,7 @@ public class ConfigEvent implements Serializable {
 	private String eventId;
 	
 	@NonNull
-	private String application;
+	private String label;
 	
 	@NonNull
 	private ConfigEventType eventType;

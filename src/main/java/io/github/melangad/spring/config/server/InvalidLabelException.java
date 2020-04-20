@@ -1,6 +1,6 @@
 package io.github.melangad.spring.config.server;
 
-public class InvalidApplicationException extends Exception {
+public class InvalidLabelException extends Exception {
 
 	/**
 	 * 

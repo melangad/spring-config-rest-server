@@ -1,6 +1,6 @@
 package io.github.melangad.spring.config.server;
 
-public class ApplicationAlreadyExisitException extends Exception {
+public class LabelAlreadyExisitException extends Exception {
 
 	/**
 	 * 

@@ -8,10 +8,10 @@ The server is using database as the configuration source.
 # Server
 Server can be easily integrated with any Spring Boot project. Server provides following features at the moment.
 
-* Configurations can be stored against a unique application ID
+* Configurations can be stored against a unique label
 * Configurations are version controlled in the database with history
 * Configurations are stored as a single JSON object in the database for integrity
-* Provide RESTful APIs to Create, Update and Get configurations based on application ID
+* Provide RESTful APIs to Create, Update and Get configurations based on label
 * Actuator endpoint to query the configuration version and last update timestamp on the client side
 
 # Quick Start
@@ -59,12 +59,12 @@ Main configuration table
 ```
 CREATE TABLE `config` (
   `id` int(11) NOT NULL,
-  `application` varchar(255) DEFAULT NULL,
+  `label` varchar(255) DEFAULT NULL,
   `config_version` int(11) DEFAULT NULL,
   `update_time` datetime(6) DEFAULT NULL,
   `config_value` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY (`application`)
+  UNIQUE KEY (`label`)
 )
 ```
 
@@ -72,7 +72,7 @@ History table
 ```
 CREATE TABLE `config_history` (
   `id` int(11) NOT NULL,
-  `application` varchar(255) DEFAULT NULL,
+  `label` varchar(255) DEFAULT NULL,
   `config_version` varchar(255) DEFAULT NULL,
   `update_time` datetime(6) DEFAULT NULL,
   `value` varchar(255) DEFAULT NULL,
@@ -81,10 +81,10 @@ CREATE TABLE `config_history` (
 ```
 
 ## APIs
-### Create New Application with configuration
+### Create New Label with configuration
 #### API
 ```
-POST /config/{APPLICATION_ID}
+POST /config/{LABEL}
 ```
 #### Sample Request Body
 ```
@@ -101,15 +101,15 @@ POST /config/{APPLICATION_ID}
 ```
 You could add multiple keys at the same time
 
-### Get Configurations for an application
+### Get Configurations for an label
 #### API
 ```
-GET /config/{APPLICATION_ID}
+GET /config/{LABEL}
 ```
-### Update configuration on an existing application
+### Update configuration on an existing label
 #### API
 ```
-PATCH /config/{APPLICATION_ID}
+PATCH /config/{LABEL}
 ```
 #### Sample Request Body
 ```
@@ -128,11 +128,11 @@ At the same time you could add new configurations also
 
 Note: Every time when configuration update API invoke, it would increase the version even though there are no changes.
 
-### Replace configuration on an existing application
+### Replace configuration on an existing label
 Existing configuration will be fully replaced with provided configurations. Versions will ne bumped up.
 #### API
 ```
-PUT /config/{APPLICATION_ID}
+PUT /config/{LABEL}
 ```
 #### Sample Request Body
 ```
@@ -160,7 +160,7 @@ POST /config/feedback
 #### Sample Request Body
 ```
 {
-    "application": "APPLICATION_ID",
+    "label": "LABEL",
     "clientId": "CLIENT_ID",
     "clientVersion": 3
     "lastUpdateTime": "2020-04-19T13:49:35Z"

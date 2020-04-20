@@ -8,6 +8,6 @@ import io.github.melangad.spring.config.server.entity.Config;
 
 public interface ConfigRepository extends CrudRepository<Config, Integer> {
 
-	List<Config> findByApplication(String application);
+	List<Config> findByLabel(String label);
 
 }

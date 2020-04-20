@@ -49,14 +49,14 @@ public class ConfigService {
 	/**
 	 * Get Config DAO from the Database
 	 * 
-	 * @param application Application ID
+	 * @param label Label
 	 * @return Config details
 	 */
-	public Optional<ConfigDetailDAO> getConfig(final String application) {
+	public Optional<ConfigDetailDAO> getConfig(final String label) {
 
 		ConfigDetailDAO configDetails = null;
 
-		final List<Config> list = configRepository.findByApplication(application);
+		final List<Config> list = configRepository.findByLabel(label);
 
 		if (list.stream().findFirst().isPresent()) {
 			final Config config = list.stream().findFirst().get();
@@ -71,17 +71,17 @@ public class ConfigService {
 	/**
 	 * Create new configuration
 	 * 
-	 * @param application Application ID
+	 * @param label Label
 	 * @param configs     Config map
 	 * @return Config Details DAO
-	 * @throws ApplicationAlreadyExisitException
+	 * @throws LabelAlreadyExisitException
 	 * @throws JsonProcessingException
 	 */
-	public Optional<ConfigDetailDAO> createConfig(final String application, Map<String, ConfigMetaDAO> configs)
-			throws ApplicationAlreadyExisitException, InvalidConfigException {
+	public Optional<ConfigDetailDAO> createConfig(final String label, Map<String, ConfigMetaDAO> configs)
+			throws LabelAlreadyExisitException, InvalidConfigException {
 
 		final Config config = new Config();
-		config.setApplication(application);
+		config.setLabel(label);
 		config.setConfigVersion(1);
 
 		try {
@@ -93,11 +93,11 @@ public class ConfigService {
 
 		try {
 			this.configRepository.save(config);
-			this.dispatchEvent(ConfigEventType.CONFIG_CREATE, application);
+			this.dispatchEvent(ConfigEventType.CONFIG_CREATE, label);
 		} catch (Exception se) {
 			if (se instanceof SQLIntegrityConstraintViolationException
 					|| se instanceof DataIntegrityViolationException) {
-				throw new ApplicationAlreadyExisitException();
+				throw new LabelAlreadyExisitException();
 			} else {
 				log.error(se.getMessage(), se);
 			}
@@ -112,16 +112,16 @@ public class ConfigService {
 	 * Patch Config. this will also add a history record and bump up the version.
 	 * This will update provided properties or add new properties (delta update)
 	 * 
-	 * @param application Application ID
+	 * @param label Label
 	 * @param configs     Config Map
 	 * @return updated Config details
-	 * @throws InvalidApplicationException
+	 * @throws InvalidLabelException
 	 * @throws InvalidConfigException
 	 */
-	public ConfigDetailDAO patchConfig(final String application, Map<String, ConfigMetaDAO> configs)
-			throws InvalidApplicationException, InvalidConfigException {
+	public ConfigDetailDAO patchConfig(final String label, Map<String, ConfigMetaDAO> configs)
+			throws InvalidLabelException, InvalidConfigException {
 		Config config = null;
-		final List<Config> list = configRepository.findByApplication(application);
+		final List<Config> list = configRepository.findByLabel(label);
 
 		if (list.stream().findFirst().isPresent()) {
 			config = list.stream().findFirst().get();
@@ -149,13 +149,13 @@ public class ConfigService {
 				config = this.configRepository.save(config);
 				this.configHistoryRepository.save(history);
 
-				this.dispatchEvent(ConfigEventType.CONFIG_PATCH, application);
+				this.dispatchEvent(ConfigEventType.CONFIG_PATCH, label);
 			} catch (Exception se) {
 				log.error(se.getMessage(), se);
 			}
 
 		} else {
-			throw new InvalidApplicationException();
+			throw new InvalidLabelException();
 		}
 
 		return this.convertToConfigDetailDAO(config);
@@ -166,16 +166,16 @@ public class ConfigService {
 	 * Update Config. this will also add a history record and bump up the version
 	 * This would replace existing configurations with provided set
 	 * 
-	 * @param application Application ID
+	 * @param label Label
 	 * @param configs     Config Map
 	 * @return updated Config details
-	 * @throws InvalidApplicationException
+	 * @throws InvalidLabelException
 	 * @throws InvalidConfigException
 	 */
-	public ConfigDetailDAO updateConfig(final String application, Map<String, ConfigMetaDAO> configs)
-			throws InvalidApplicationException, InvalidConfigException {
+	public ConfigDetailDAO updateConfig(final String label, Map<String, ConfigMetaDAO> configs)
+			throws InvalidLabelException, InvalidConfigException {
 		Config config = null;
-		final List<Config> list = configRepository.findByApplication(application);
+		final List<Config> list = configRepository.findByLabel(label);
 
 		if (list.stream().findFirst().isPresent()) {
 			config = list.stream().findFirst().get();
@@ -196,13 +196,13 @@ public class ConfigService {
 				config = this.configRepository.save(config);
 				this.configHistoryRepository.save(history);
 
-				this.dispatchEvent(ConfigEventType.CONFIG_UPDATE, application);
+				this.dispatchEvent(ConfigEventType.CONFIG_UPDATE, label);
 			} catch (Exception se) {
 				log.error(se.getMessage(), se);
 			}
 
 		} else {
-			throw new InvalidApplicationException();
+			throw new InvalidLabelException();
 		}
 
 		return this.convertToConfigDetailDAO(config);
@@ -221,9 +221,9 @@ public class ConfigService {
 	}
 
 	@Async
-	private void dispatchEvent(ConfigEventType eventType, final String application) {
+	private void dispatchEvent(ConfigEventType eventType, final String label) {
 		if (null != this.configEventHandler) {
-			final ConfigEvent event = new ConfigEvent(UUID.randomUUID().toString(), application, eventType);
+			final ConfigEvent event = new ConfigEvent(UUID.randomUUID().toString(), label, eventType);
 			event.setEventDate(new Date());
 
 			this.configEventHandler.onEvent(event);
@@ -250,7 +250,7 @@ public class ConfigService {
 
 	private ConfigHistory convertToConfigHistory(Config config) {
 		ConfigHistory history = new ConfigHistory();
-		history.setApplication(config.getApplication());
+		history.setLabel(config.getLabel());
 		history.setConfigVersion(config.getConfigVersion());
 		history.setValue(config.getValue());
 		history.setUpdateTime(config.getUpdateTime());
