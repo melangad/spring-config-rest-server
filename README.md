@@ -20,7 +20,7 @@ To use the client side in your application, add following dependency on your pom
 .pom.xml
 ```
 <dependency>
-    <groupId>io.github.melangad.spring.config</groupId>
+    <groupId>io.github.melangad</groupId>
     <artifactId>spring-config-rest-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 </dependency>
