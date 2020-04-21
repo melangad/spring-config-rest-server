@@ -1,11 +1,34 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.github.melangad.spring.config</groupId>
+	<groupId>io.github.melangad</groupId>
 	<artifactId>spring-config-rest-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Spring Config Server RESTful Server</name>
+	
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>Alternative implementation for Spring Cloud Config with additional features</description>
+	<url>https://github.com/melangad/spring-config-rest-server</url>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Melanga Dissanayake</name>
+			<email>melangad@gmail.com</email>
+			<organizationUrl>https://github.com/melangad</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/melangad/spring-config-rest-server.git</connection>
+		<developerConnection>scm:git:ssh://github.com:melangad/spring-config-rest-server.git</developerConnection>
+		<url>http://github.com/melangad/spring-config-rest-server/tree/master</url>
+	  <tag>spring-config-rest-server-0.0.1</tag>
+  </scm>
 
 	<properties>
 		<spring.boot.version>2.2.6.RELEASE</spring.boot.version>
@@ -59,4 +82,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
 </project>
