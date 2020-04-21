@@ -28,6 +28,15 @@ import io.github.melangad.spring.config.server.repository.ConfigHistoryRepositor
 import io.github.melangad.spring.config.server.repository.ConfigRepository;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * <h1>Config Service</h1>
+ * Main service for configuration management. If you do not want to use the provided RESTful API,
+ * you can create your own server APIs and use injected Config Service to process them.
+ *  
+ * @author melanga
+ *
+ */
+
 @Service
 @Slf4j
 public class ConfigService {
@@ -49,7 +58,7 @@ public class ConfigService {
 	/**
 	 * Get Config DAO from the Database
 	 * 
-	 * @param label Label
+	 * @param label is a unique identifier for config set
 	 * @return Config details
 	 */
 	public Optional<ConfigDetailDAO> getConfig(final String label) {
@@ -71,11 +80,11 @@ public class ConfigService {
 	/**
 	 * Create new configuration
 	 * 
-	 * @param label Label
-	 * @param configs     Config map
+	 * @param label is a unique identifier for config set
+	 * @param configs is a map of configuration data including meta data
 	 * @return Config Details DAO
-	 * @throws LabelAlreadyExisitException
-	 * @throws JsonProcessingException
+	 * @throws LabelAlreadyExisitException if label is already exist
+	 * @throws InvalidConfigException if invalid configuration found 
 	 */
 	public Optional<ConfigDetailDAO> createConfig(final String label, Map<String, ConfigMetaDAO> configs)
 			throws LabelAlreadyExisitException, InvalidConfigException {
@@ -112,11 +121,11 @@ public class ConfigService {
 	 * Patch Config. this will also add a history record and bump up the version.
 	 * This will update provided properties or add new properties (delta update)
 	 * 
-	 * @param label Label
-	 * @param configs     Config Map
+	 * @param label is a unique identifier for config set
+	 * @param configs is a map of configuration data including meta data
 	 * @return updated Config details
-	 * @throws InvalidLabelException
-	 * @throws InvalidConfigException
+	 * @throws InvalidLabelException if unable to find the label
+	 * @throws InvalidConfigException if invalid configuration found
 	 */
 	public ConfigDetailDAO patchConfig(final String label, Map<String, ConfigMetaDAO> configs)
 			throws InvalidLabelException, InvalidConfigException {
@@ -166,11 +175,11 @@ public class ConfigService {
 	 * Update Config. this will also add a history record and bump up the version
 	 * This would replace existing configurations with provided set
 	 * 
-	 * @param label Label
-	 * @param configs     Config Map
+	 * @param label is a unique identifier for config set
+	 * @param configs is a map of configuration data including meta data
 	 * @return updated Config details
-	 * @throws InvalidLabelException
-	 * @throws InvalidConfigException
+	 * @throws InvalidLabelException if unable to find the label
+	 * @throws InvalidConfigException if invalid configuration found 
 	 */
 	public ConfigDetailDAO updateConfig(final String label, Map<String, ConfigMetaDAO> configs)
 			throws InvalidLabelException, InvalidConfigException {
