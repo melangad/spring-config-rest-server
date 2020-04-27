@@ -7,12 +7,24 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- task: DownloadSecureFile@1
+  displayName: Download Secure file
+  inputs:
+    secureFile: privatekey.gpg
+  name: privateKeyRing
+
+- task: DownloadSecureFile@1
+  displayName: Download Secure file
+  inputs:
+    secureFile: settings.xml
+  name: settingsXml
+
 - task: Maven@3
   displayName: 'Prepare Release'
   inputs:
     mavenPomFile: 'pom.xml'
     goals: 'release:prepare'
-    options: '-B'
+    options: '--settings $(settingsXml.secureFilePath) -B'
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     javaHomeOption: 'JDKVersion'
@@ -23,10 +35,11 @@ steps:
     sonarQubeRunAnalysis: false
 
 - task: Maven@3
-  displayName: 'Prepare Release'
+  displayName: 'Release'
   inputs:
     mavenPomFile: 'pom.xml'
     goals: 'release:perform'
+    options: '--settings $(settingsXml.secureFilePath) -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath)'
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     javaHomeOption: 'JDKVersion'
