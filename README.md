@@ -88,16 +88,18 @@ POST /config/{LABEL}
 ```
 #### Sample Request Body
 ```
-{
-    "SOME-KEY1":{
+[
+    {
+        "key": "SOME-KEY1",
         "value": "val1",
         "description": "desc1"
     },
-    "SOME-KEY2":{
+    {
+        "key": "SOME-KEY2",
         "value": "val2",
         "description": "desc2"
     }
-}
+]
 ```
 You could add multiple keys at the same time
 
@@ -113,16 +115,18 @@ PATCH /config/{LABEL}
 ```
 #### Sample Request Body
 ```
-{
-    "SOME-KEY1":{
-        "value": "new vlaue",
-        "description": "desc1"
+[
+    {
+        "key": "SOME-KEY1",
+        "value": "val1-2",
+        "description": "desc1-2"
     },
-    "SOME-KEY3":{
-        "value": "val2",
-        "description": "desc2"
+    {
+        "key": "SOME-KEY3",
+        "value": "val3",
+        "description": "desc3"
     }
-}
+]
 ```
 At the same time you could add new configurations also
 
@@ -136,16 +140,18 @@ PUT /config/{LABEL}
 ```
 #### Sample Request Body
 ```
-{
-    "SOME-KEY1":{
-        "value": "new vlaue",
+[
+    {
+        "key": "SOME-KEY3",
+        "value": "val1",
         "description": "desc1"
     },
-    "SOME-KEY3":{
+    {
+        "key": "SOME-KEY4",
         "value": "val2",
         "description": "desc2"
     }
-}
+]
 ```
 
 ### Client Feedback
