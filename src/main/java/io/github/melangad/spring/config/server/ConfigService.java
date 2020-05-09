@@ -1,11 +1,17 @@
 package io.github.melangad.spring.config.server;
 
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,10 +35,10 @@ import io.github.melangad.spring.config.server.repository.ConfigRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * <h1>Config Service</h1>
- * Main service for configuration management. If you do not want to use the provided RESTful API,
- * you can create your own server APIs and use injected Config Service to process them.
- *  
+ * <h1>Config Service</h1> Main service for configuration management. If you do
+ * not want to use the provided RESTful API, you can create your own server APIs
+ * and use injected Config Service to process them.
+ * 
  * @author melanga
  *
  */
@@ -54,6 +60,19 @@ public class ConfigService {
 
 	@Autowired(required = false)
 	private ClientFeedbackHandler clientFeedbackHandler;
+
+	private Comparator<ConfigMetaDAO> compareByKey = (ConfigMetaDAO o1, ConfigMetaDAO o2) -> o1.getKey()
+			.compareTo(o2.getKey());
+
+	public List<String> getLabelList() {
+		List<String> configList = new ArrayList<String>();
+
+		configRepository.findAll().forEach(c -> {
+			configList.add(c.getLabel());
+		});
+
+		return configList;
+	}
 
 	/**
 	 * Get Config DAO from the Database
@@ -80,14 +99,21 @@ public class ConfigService {
 	/**
 	 * Create new configuration
 	 * 
-	 * @param label is a unique identifier for config set
-	 * @param configs is a map of configuration data including meta data
+	 * @param label   is a unique identifier for config set
+	 * @param configs is a list of configuration data including meta data
 	 * @return Config Details DAO
 	 * @throws LabelAlreadyExisitException if label is already exist
-	 * @throws InvalidConfigException if invalid configuration found 
+	 * @throws InvalidConfigException      if invalid configuration found
+	 * @throws DuplicateKeysException if duplicate keys provided
 	 */
-	public Optional<ConfigDetailDAO> createConfig(final String label, Map<String, ConfigMetaDAO> configs)
-			throws LabelAlreadyExisitException, InvalidConfigException {
+	public Optional<ConfigDetailDAO> createConfig(final String label, List<ConfigMetaDAO> configs)
+			throws LabelAlreadyExisitException, InvalidConfigException, DuplicateKeysException {
+
+		List<ConfigMetaDAO> duplicateList = this.getDuplicates(configs);
+
+		if (duplicateList.size() > 0) {
+			throw new DuplicateKeysException(duplicateList);
+		}
 
 		final Config config = new Config();
 		config.setLabel(label);
@@ -121,14 +147,22 @@ public class ConfigService {
 	 * Patch Config. this will also add a history record and bump up the version.
 	 * This will update provided properties or add new properties (delta update)
 	 * 
-	 * @param label is a unique identifier for config set
-	 * @param configs is a map of configuration data including meta data
+	 * @param label   is a unique identifier for config set
+	 * @param configs is a list of configuration data including meta data
 	 * @return updated Config details
-	 * @throws InvalidLabelException if unable to find the label
+	 * @throws InvalidLabelException  if unable to find the label
 	 * @throws InvalidConfigException if invalid configuration found
+	 * @throws DuplicateKeysException if duplicate keys provided
 	 */
-	public ConfigDetailDAO patchConfig(final String label, Map<String, ConfigMetaDAO> configs)
-			throws InvalidLabelException, InvalidConfigException {
+	public ConfigDetailDAO patchConfig(final String label, List<ConfigMetaDAO> configs)
+			throws InvalidLabelException, InvalidConfigException, DuplicateKeysException {
+
+		List<ConfigMetaDAO> duplicateList = this.getDuplicates(configs);
+
+		if (duplicateList.size() > 0) {
+			throw new DuplicateKeysException(duplicateList);
+		}
+
 		Config config = null;
 		final List<Config> list = configRepository.findByLabel(label);
 
@@ -142,13 +176,17 @@ public class ConfigService {
 			config.increaseVersion();
 
 			try {
-				Map<String, ConfigMetaDAO> currentConfig = this.getConfigMap(config.getValue());
+				List<ConfigMetaDAO> currentConfig = this.getConfigList(config.getValue());
 
-				configs.forEach((k, v) -> {
-					currentConfig.put(k, v);
+				Map<String, ConfigMetaDAO> currentConfigMap = currentConfig.stream()
+						.collect(Collectors.toMap(ConfigMetaDAO::getKey, v -> v));
+
+				configs.forEach(v -> {
+					currentConfigMap.put(v.getKey(), v);
 				});
 
-				config.setValue(this.mapper.writeValueAsString(currentConfig));
+				config.setValue(this.mapper
+						.writeValueAsString(currentConfigMap.values().stream().collect(Collectors.toList())));
 			} catch (JsonProcessingException e) {
 				log.error(e.getMessage());
 				throw new InvalidConfigException();
@@ -175,14 +213,22 @@ public class ConfigService {
 	 * Update Config. this will also add a history record and bump up the version
 	 * This would replace existing configurations with provided set
 	 * 
-	 * @param label is a unique identifier for config set
-	 * @param configs is a map of configuration data including meta data
+	 * @param label   is a unique identifier for config set
+	 * @param configs is a list of configuration data including meta data
 	 * @return updated Config details
-	 * @throws InvalidLabelException if unable to find the label
-	 * @throws InvalidConfigException if invalid configuration found 
+	 * @throws InvalidLabelException  if unable to find the label
+	 * @throws InvalidConfigException if invalid configuration found
+	 * @throws DuplicateKeysException if duplicate keys provided
 	 */
-	public ConfigDetailDAO updateConfig(final String label, Map<String, ConfigMetaDAO> configs)
-			throws InvalidLabelException, InvalidConfigException {
+	public ConfigDetailDAO updateConfig(final String label, List<ConfigMetaDAO> configs)
+			throws InvalidLabelException, InvalidConfigException, DuplicateKeysException {
+
+		List<ConfigMetaDAO> duplicateList = this.getDuplicates(configs);
+
+		if (duplicateList.size() > 0) {
+			throw new DuplicateKeysException(duplicateList);
+		}
+
 		Config config = null;
 		final List<Config> list = configRepository.findByLabel(label);
 
@@ -239,9 +285,8 @@ public class ConfigService {
 		}
 	}
 
-	private Map<String, ConfigMetaDAO> getConfigMap(final String json)
-			throws JsonMappingException, JsonProcessingException {
-		return mapper.readValue(json, new TypeReference<Map<String, ConfigMetaDAO>>() {
+	private List<ConfigMetaDAO> getConfigList(final String json) throws JsonMappingException, JsonProcessingException {
+		return mapper.readValue(json, new TypeReference<List<ConfigMetaDAO>>() {
 		});
 	}
 
@@ -249,7 +294,9 @@ public class ConfigService {
 		final ConfigDetailDAO configDetails = new ConfigDetailDAO();
 		configDetails.setVersion(config.getConfigVersion());
 		try {
-			configDetails.setConfigData(this.getConfigMap(config.getValue()));
+			List<ConfigMetaDAO> list = this.getConfigList(config.getValue());
+			Collections.sort(list, compareByKey);
+			configDetails.setConfigData(list);
 		} catch (JsonProcessingException e) {
 			log.error(e.getMessage());
 		}
@@ -265,6 +312,11 @@ public class ConfigService {
 		history.setUpdateTime(config.getUpdateTime());
 
 		return history;
+	}
+
+	private List<ConfigMetaDAO> getDuplicates(List<ConfigMetaDAO> configList) {
+		Set<String> tempMap = new HashSet<>();
+		return configList.stream().filter(item -> !tempMap.add(item.getKey())).collect(Collectors.toList());
 	}
 
 }

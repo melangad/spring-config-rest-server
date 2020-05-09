@@ -47,30 +47,31 @@ public class ConfigServiceTest {
 	private ConfigHistoryRepository configHistoryRepository;
 
 	@Test
-	public void createConfigSuccessful() throws LabelAlreadyExisitException, InvalidConfigException {
+	public void createConfigSuccessful() throws LabelAlreadyExisitException, InvalidConfigException, DuplicateKeysException {
 
 		Config config = new Config();
 
 		Mockito.when(configRepository.save(Mockito.any())).thenReturn(config);
 
 		ConfigMetaDAO meta = new ConfigMetaDAO();
+		meta.setKey("SOME-KEY");
 		meta.setValue("val1");
 		meta.setDescription("desc1");
 
-		Map<String, ConfigMetaDAO> configMap = new HashMap<String, ConfigMetaDAO>();
-		configMap.put("SOME-KEY", meta);
+		List<ConfigMetaDAO> configList = new ArrayList<>();
+		configList.add(meta);
 
-		Optional<ConfigDetailDAO> result = configService.createConfig("APP1", configMap);
+		Optional<ConfigDetailDAO> result = configService.createConfig("APP1", configList);
 
 		assertThat(result.get()).isNotNull();
 		assertThat(result.get().getVersion()).isEqualTo(1);
 		assertThat(result.get().getConfigData().size()).isEqualTo(1);
-		assertThat(result.get().getConfigData().get("SOME-KEY").getValue()).isEqualTo("val1");
-		assertThat(result.get().getConfigData().get("SOME-KEY").getDescription()).isEqualTo("desc1");
+		assertThat(result.get().getConfigData().get(0).getValue()).isEqualTo("val1");
+		assertThat(result.get().getConfigData().get(0).getDescription()).isEqualTo("desc1");
 	}
 
 	@Test(expected = LabelAlreadyExisitException.class)
-	public void createConfigFailExistingApplication() throws LabelAlreadyExisitException, InvalidConfigException {
+	public void createConfigFailExistingApplication() throws LabelAlreadyExisitException, InvalidConfigException, DuplicateKeysException {
 
 		Mockito.when(configRepository.save(Mockito.any())).thenThrow(DataIntegrityViolationException.class);
 
@@ -78,16 +79,16 @@ public class ConfigServiceTest {
 		meta.setValue("val1");
 		meta.setDescription("desc1");
 
-		Map<String, ConfigMetaDAO> configMap = new HashMap<String, ConfigMetaDAO>();
-		configMap.put("SOME-KEY", meta);
+		List<ConfigMetaDAO> configList = new ArrayList<>();
+		configList.add(meta);
 
-		configService.createConfig("APP1", configMap);
+		configService.createConfig("APP1", configList);
 	}
 
 	@Test
 	public void getConfigSuccessful() {
 
-		String json = "{\"SOME-KEY\":{\"value\":\"val1\",\"description\":\"desc1\"}}";
+		String json = "[{\"key\": \"SOME-KEY\", \"value\":\"val1\",\"description\":\"desc1\"}]";
 
 		Config config = new Config();
 		config.setConfigVersion(3);
@@ -97,15 +98,15 @@ public class ConfigServiceTest {
 		List<Config> list = new ArrayList<Config>();
 		list.add(config);
 
-		Mockito.when(configRepository.findByLabel("APP1")).thenReturn(list);
+		Mockito.when(configRepository.findByLabel(Mockito.any())).thenReturn(list);
 
 		Optional<ConfigDetailDAO> result = configService.getConfig("APP1");
 
 		assertThat(result.get()).isNotNull();
 		assertThat(result.get().getVersion()).isEqualTo(3);
 		assertThat(result.get().getConfigData().size()).isEqualTo(1);
-		assertThat(result.get().getConfigData().get("SOME-KEY").getValue()).isEqualTo("val1");
-		assertThat(result.get().getConfigData().get("SOME-KEY").getDescription()).isEqualTo("desc1");
+		assertThat(result.get().getConfigData().get(0).getValue()).isEqualTo("val1");
+		assertThat(result.get().getConfigData().get(0).getDescription()).isEqualTo("desc1");
 	}
 
 	@Test
